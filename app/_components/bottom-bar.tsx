@@ -7,7 +7,8 @@ const items = [
   { href: '/wallet/convert', label: '환전' },
   { href: '/wallet/qr', label: '결제' },
   { href: '/wallet/id', label: 'ID' },
-  { href: '/wallet/voucher', label: '휴가' }
+  { href: '/wallet/voucher', label: '휴가' },
+  { href: '/wallet/training', label: '교육' }
 ];
 
 export function BottomBar() {

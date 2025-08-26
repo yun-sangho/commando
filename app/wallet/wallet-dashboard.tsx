@@ -13,7 +13,6 @@ export default function WalletDashboard() {
     <div className="p-4 space-y-6">
       <header className="space-y-2">
         <h1 className="text-xl font-semibold">지갑</h1>
-        <p className="text-sm text-muted-foreground">Commando Coin & KRW 요약</p>
       </header>
       <section className="grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-card p-4 shadow-sm border">
@@ -25,7 +24,7 @@ export default function WalletDashboard() {
           <p className="text-2xl font-bold tracking-tight">{format(wallet.krw)}</p>
         </div>
       </section>
-      <section className="grid grid-cols-4 gap-2 text-xs">
+      <section className="grid grid-cols-3 gap-2 text-xs">
         <Link href="/wallet/convert" className="h-16 rounded-md bg-secondary text-secondary-foreground flex flex-col items-center justify-center gap-1">
           <span>전환</span>
         </Link>
@@ -36,7 +35,13 @@ export default function WalletDashboard() {
           <span>내역</span>
         </Link>
         <Link href="/wallet/voucher" className="h-16 rounded-md bg-secondary text-secondary-foreground flex flex-col items-center justify-center gap-1">
-          <span>후급증</span>
+          <span>휴가</span>
+        </Link>
+        <Link href="/wallet/id" className="h-16 rounded-md bg-secondary text-secondary-foreground flex flex-col items-center justify-center gap-1">
+          <span>ID</span>
+        </Link>
+        <Link href="/wallet/training" className="h-16 rounded-md bg-secondary text-secondary-foreground flex flex-col items-center justify-center gap-1">
+          <span>교육</span>
         </Link>
       </section>
       <section>

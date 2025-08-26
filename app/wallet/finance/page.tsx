@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ConvertPage from '@/app/wallet/convert/page';
 import QRPage from '@/app/wallet/qr/page';
@@ -16,6 +16,14 @@ const tabs = [
 ];
 
 export default function FinanceHub(){
+  return (
+    <Suspense fallback={<FinanceSkeleton />}> 
+      <FinanceInner />
+    </Suspense>
+  );
+}
+
+function FinanceInner(){
   const searchParams = useSearchParams();
   const router = useRouter();
   const initial = searchParams.get('tab');
@@ -28,8 +36,7 @@ export default function FinanceHub(){
       q.set('tab', tab);
       router.replace(`/wallet/finance?${q.toString()}`);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[tab]);
+  },[tab, router, searchParams]);
 
   return (
     <div className="p-4 space-y-5">
@@ -51,13 +58,29 @@ export default function FinanceHub(){
         })}
       </nav>
       <section className="rounded-lg border bg-card">
-  {tab==='assets' && <div className="animate-in fade-in"><AssetsTab /></div>}
+        {tab==='assets' && <div className="animate-in fade-in"><AssetsTab /></div>}
         {tab==='convert' && <div className="animate-in fade-in"><ConvertPage /></div>}
         {tab==='qr' && <div className="animate-in fade-in"><QRPage /></div>}
         {tab==='tx' && <div className="animate-in fade-in"><TransactionsPage /></div>}
       </section>
     </div>
-  )
+  );
+}
+
+function FinanceSkeleton(){
+  return (
+    <div className="p-4 space-y-4 animate-pulse">
+      <div className="h-6 w-32 bg-muted rounded" />
+      <div className="h-4 w-48 bg-muted rounded" />
+      <div className="flex gap-2">
+        <div className="h-9 flex-1 bg-muted rounded" />
+        <div className="h-9 flex-1 bg-muted rounded" />
+        <div className="h-9 flex-1 bg-muted rounded" />
+        <div className="h-9 flex-1 bg-muted rounded" />
+      </div>
+      <div className="h-40 rounded bg-muted" />
+    </div>
+  );
 }
 
 function AssetsTab(){

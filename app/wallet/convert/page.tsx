@@ -22,7 +22,6 @@ export default function ConvertPage() {
         </div>
         <div className="text-xs space-y-1 bg-card border p-3 rounded-md">
           <p>보유: {wallet.cmd.toLocaleString()} CMD</p>
-          <p>수수료: {fee.toLocaleString(undefined,{maximumFractionDigits:2})} CMD</p>
           <p>실수령 (KRW): {krw>0? krw.toLocaleString(undefined,{maximumFractionDigits:0}) : 0} ₩ (rate {rate})</p>
         </div>
   <button disabled={!(parsed>0) || parsed> wallet.cmd} className="w-full h-12 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 text-sm font-medium">전환</button>

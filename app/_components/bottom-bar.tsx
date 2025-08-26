@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation';
 const items = [
   { href: '/wallet', label: '지갑' },
   { href: '/wallet/convert', label: '환전' },
-  { href: '/wallet/qr', label: '겔제' },
+  { href: '/wallet/qr', label: '결제' },
   { href: '/wallet/id', label: 'ID' },
-  { href: '/wallet/voucher', label: 'Voucher' }
+  { href: '/wallet/voucher', label: '휴가' }
 ];
 
 export function BottomBar() {

@@ -3,75 +3,124 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
 
-export type VoucherTransport = 'bus' | 'air' | 'ship' | 'rail';
-export type VoucherStatus = 'requested' | 'approved' | 'printed' | 'used' | 'cancelled' | 'expired' | 'destroyed';
+// Leave Management (휴가 + 교통 후급증 연동)
+export type TransportMode = 'bus' | 'air' | 'ship' | 'rail';
+export type LeaveStatus = 'requested' | 'approved' | 'rejected' | 'cancelled' | 'completed';
 
-export interface Voucher {
+export interface TransportVoucher {
   id: string;
-  transport: VoucherTransport;
-  roundTrip: boolean;
+  mode: TransportMode;
+  ticketHash?: string; // printed hash (mock)
+  printedAt?: number;
+}
+
+export interface LeaveRequest {
+  id: string;
+  purpose?: string;
   origin: string;
   destination: string;
-  departDate: string; // yyyy-mm-dd
-  returnDate?: string;
-  status: VoucherStatus;
+  startDate: string; // yyyy-mm-dd
+  endDate: string;   // yyyy-mm-dd
+  status: LeaveStatus;
   createdAt: number;
   updatedAt: number;
-  immutablePrintHash?: string;
+  transport?: TransportVoucher; // optional until chosen
   officerName?: string;
   officerContact?: string;
-  hasSeal?: boolean;
 }
 
-interface VoucherState {
-  vouchers: Voucher[]; // newest first
-  request: (data: Omit<Voucher, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => void;
-  approve: (id: string) => void;
-  print: (id: string) => void;
-  markUsed: (id: string) => void;
-  cancel: (id: string) => void;
-  expireSweep: () => void;
-  destroy: (id: string) => void;
+interface LeaveState {
+  leaves: LeaveRequest[]; // newest first
+  requestLeave: (data: Omit<LeaveRequest, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'transport'> & { transportMode?: TransportMode }) => void;
+  approveLeave: (id: string, officer?: { name?: string; contact?: string }) => void;
+  rejectLeave: (id: string) => void;
+  cancelLeave: (id: string) => void;
+  completeLeave: (id: string) => void;
+  attachTransport: (id: string, mode: TransportMode) => void;
+  printTransport: (id: string) => void; // generates ticket hash
 }
 
-const allowedTransition: Record<VoucherStatus, VoucherStatus[]> = {
-  requested: ['approved', 'cancelled'],
-  approved: ['printed', 'cancelled'],
-  printed: ['used', 'expired', 'destroyed'],
-  used: [],
-  cancelled: [],
-  expired: ['destroyed'],
-  destroyed: []
-};
-
-function can(status: VoucherStatus, next: VoucherStatus) {
-  return allowedTransition[status].includes(next);
+function base64Utf8(str: string){
+  if (typeof window === 'undefined') return Buffer.from(str,'utf-8').toString('base64');
+  return btoa(unescape(encodeURIComponent(str)));
 }
 
-export const useVoucherStore = create<VoucherState>()(persist((set, get) => ({
-  vouchers: [],
-  request: (data) => {
+export const useLeaveStore = create<LeaveState>()(persist((set, get) => ({
+  leaves: (() => {
     const now = Date.now();
-    set(s => ({ vouchers: [{ ...data, id: nanoid(), status: 'requested', createdAt: now, updatedAt: now }, ...s.vouchers] }));
-  },
-  approve: (id) => set(s => ({ vouchers: s.vouchers.map(v => v.id === id && can(v.status, 'approved') ? { ...v, status: 'approved', updatedAt: Date.now() } : v) })),
-  print: (id) => set(s => ({ vouchers: s.vouchers.map(v => {
-    if (v.id === id && can(v.status, 'printed')) {
-      const hash = btoa(`${v.id}|${v.departDate}|${v.origin}|${v.destination}|${v.officerName ?? ''}`);
-      return { ...v, status: 'printed', immutablePrintHash: hash, updatedAt: Date.now() };
-    }
-    return v;
-  }) })),
-  markUsed: (id) => set(s => ({ vouchers: s.vouchers.map(v => v.id === id && can(v.status, 'used') ? { ...v, status: 'used', updatedAt: Date.now() } : v) })),
-  cancel: (id) => set(s => ({ vouchers: s.vouchers.map(v => v.id === id && can(v.status, 'cancelled') ? { ...v, status: 'cancelled', updatedAt: Date.now() } : v) })),
-  expireSweep: () => set(s => ({ vouchers: s.vouchers.map(v => {
-    if (v.status === 'printed') {
-      const dep = new Date(v.departDate).getTime();
-      if (Date.now() > dep + 24*60*60*1000 && can(v.status, 'expired')) {
-        return { ...v, status: 'expired', updatedAt: Date.now() };
+    const day = 24*60*60*1000;
+    // Pre-approved demo leaves
+    return [
+      {
+        id: nanoid(),
+        purpose: '정기휴가',
+        origin: 'BASE',
+        destination: 'HOME',
+        startDate: new Date(now + 3*day).toISOString().slice(0,10),
+        endDate: new Date(now + 7*day).toISOString().slice(0,10),
+        status: 'approved' as LeaveStatus,
+        createdAt: now - 2*day,
+        updatedAt: now - 2*day,
+        officerName: '중대장',
+        officerContact: '010-1111-2222',
+        transport: { id: nanoid(), mode: 'bus' }
+      },
+      {
+        id: nanoid(),
+        purpose: '특별위로휴가',
+        origin: 'BASE',
+        destination: 'JEJU',
+        startDate: new Date(now + 10*day).toISOString().slice(0,10),
+        endDate: new Date(now + 14*day).toISOString().slice(0,10),
+        status: 'approved' as LeaveStatus,
+        createdAt: now - 1*day,
+        updatedAt: now - 1*day,
+        officerName: '중대장',
+        officerContact: '010-1111-2222',
+        transport: { id: nanoid(), mode: 'air' }
+      },
+      {
+        id: nanoid(),
+        purpose: '청원휴가',
+        origin: 'BASE',
+        destination: 'BUSAN',
+        startDate: new Date(now - 8*day).toISOString().slice(0,10),
+        endDate: new Date(now - 4*day).toISOString().slice(0,10),
+        status: 'completed' as LeaveStatus,
+        createdAt: now - 15*day,
+        updatedAt: now - 4*day,
+        officerName: '중대장',
+        officerContact: '010-1111-2222',
+        transport: { id: nanoid(), mode: 'rail', ticketHash: 'DEMOHASH123', printedAt: now - 16*day }
       }
+    ];
+  })(),
+  requestLeave: (data) => {
+    const now = Date.now();
+    const { transportMode, ...rest } = data as any;
+    const leave: LeaveRequest = {
+      id: nanoid(),
+      status: 'requested',
+      createdAt: now,
+      updatedAt: now,
+      ...rest,
+    };
+    if (transportMode) {
+      leave.transport = { id: nanoid(), mode: transportMode };
     }
-    return v;
-  }) })),
-  destroy: (id) => set(s => ({ vouchers: s.vouchers.map(v => v.id === id && can(v.status, 'destroyed') ? { ...v, status: 'destroyed', updatedAt: Date.now() } : v) }))
-}), { name: 'voucher-store' }));
+    set(s => ({ leaves: [leave, ...s.leaves] }));
+  },
+  approveLeave: (id, officer) => set(s => ({ leaves: s.leaves.map(l => l.id === id && l.status === 'requested' ? { ...l, status: 'approved', officerName: officer?.name ?? l.officerName, officerContact: officer?.contact ?? l.officerContact, updatedAt: Date.now() } : l) })),
+  rejectLeave: (id) => set(s => ({ leaves: s.leaves.map(l => l.id === id && l.status === 'requested' ? { ...l, status: 'rejected', updatedAt: Date.now() } : l) })),
+  cancelLeave: (id) => set(s => ({ leaves: s.leaves.map(l => ['requested','approved'].includes(l.status) && l.id === id ? { ...l, status: 'cancelled', updatedAt: Date.now() } : l) })),
+  completeLeave: (id) => set(s => ({ leaves: s.leaves.map(l => l.id === id && l.status === 'approved' ? { ...l, status: 'completed', updatedAt: Date.now() } : l) })),
+  attachTransport: (id, mode) => set(s => ({ leaves: s.leaves.map(l => l.id === id ? { ...l, transport: { id: l.transport?.id ?? nanoid(), mode, ticketHash: l.transport?.ticketHash, printedAt: l.transport?.printedAt }, updatedAt: Date.now() } : l) })),
+  printTransport: (id) => set(s => ({ leaves: s.leaves.map(l => {
+    if (l.id === id && l.transport) {
+      const raw = `${l.id}|${l.startDate}|${l.endDate}|${l.origin}|${l.destination}|${l.transport.mode}`;
+      const ticketHash = base64Utf8(raw).replace(/=+$/,'');
+      return { ...l, transport: { ...l.transport, ticketHash, printedAt: Date.now() }, updatedAt: Date.now() };
+    }
+    return l;
+  }) }))
+}), { name: 'leave-store' }));

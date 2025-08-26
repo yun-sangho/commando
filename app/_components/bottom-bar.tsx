@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const items = [
-  { href: '/wallet', label: 'Wallet' },
-  { href: '/wallet/convert', label: 'Convert' },
-  { href: '/wallet/qr', label: 'QR' },
+  { href: '/wallet', label: '지갑' },
+  { href: '/wallet/convert', label: '환전' },
+  { href: '/wallet/qr', label: '겔제' },
   { href: '/wallet/id', label: 'ID' },
   { href: '/wallet/voucher', label: 'Voucher' }
 ];

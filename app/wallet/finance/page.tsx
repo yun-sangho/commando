@@ -38,7 +38,7 @@ function FinanceInner(){
   },[tab, router, searchParams]);
 
   return (
-    <div className="p-4 space-y-5">
+    <div className="p-4 space-y-5 w-full">
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">금융</h1>
   <p className="text-xs text-muted-foreground">자산 / 환전 / 내역</p>

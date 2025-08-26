@@ -20,7 +20,7 @@ export default function WalletSectionLayout({ children }: { children: ReactNode 
 				}}
 			>
 				<div
-					className="relative w-full max-w-[420px] h-[844px] md:h-[900px] rounded-[2.4rem] border shadow-lg bg-background overflow-hidden flex flex-col"
+					className="relative w-[420px] h-[844px] md:h-[900px] rounded-[2.4rem] border shadow-lg bg-background overflow-hidden flex flex-col"
 					style={{ boxShadow: '0 4px 20px -2px oklch(0.2 0 0 / .5), 0 0 0 1px oklch(0.3 0 0 / .3)' }}
 				>
 					{/* Notch / status bar mock */}
@@ -28,7 +28,7 @@ export default function WalletSectionLayout({ children }: { children: ReactNode 
 						<div className="absolute top-1 left-1/2 -translate-x-1/2 w-40 h-5 bg-black/60 dark:bg-black/80 rounded-full" />
 					</div>
 					{/* Scrollable content */}
-					<div className="flex-1 overflow-y-auto pb-20">{children}</div>
+					<div className="flex-1 overflow-y-auto pb-20 w-full">{children}</div>
 					<div className="absolute bottom-0 left-0 right-0">
 						<BottomBar />
 					</div>

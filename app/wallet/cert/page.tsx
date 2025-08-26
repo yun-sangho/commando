@@ -33,7 +33,7 @@ function CertificatesInner(){
   }, [tab, router, searchParams]);
 
   return (
-    <div className="p-4 space-y-5">
+    <div className="p-4 space-y-5 w-full">
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">증명서</h1>
         <p className="text-xs text-muted-foreground">신분 및 교육 수료 NFT 증명서</p>

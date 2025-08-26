@@ -451,7 +451,7 @@ export default function HomeClient() {
 군 환경 시나리오 데모의 핵심 도메인인 "병사 지갑" 기능을 구조화한 개발 지침입니다. Stablecoin (Commando Coin) 과 원화(KRW) 자산, 급여/수당/지출/후급증(교통비 지원) 흐름을 로컬에서 시뮬레이션합니다.
 
 ### 19.1 기능 개요
-1. 잔액 표시: Commando 코인(CCD 가칭) & KRW 동시 표시 (고정 환율 or 모킹 환율 테이블).
+1. 잔액 표시: Commando 코인(CMD) & KRW 동시 표시 (고정 환율 or 모킹 환율 테이블).
 2. 입금 내역: 급여, 휴가비, 격오지/도서/항공 등 근무·출장 수당, 기타 포상금 로그.
 3. 지출 내역: PX(매점) / 미션 구매 / 전송(transfer) / QR 결제 / 코인→KRW 전환.
 4. 코인→KRW 전환: 수수료 정책(모킹) & 변환 트랜잭션 기록.
@@ -465,7 +465,7 @@ export default function HomeClient() {
 |------|------|---------------|
 | Wallet Dashboard (`/wallet`) | 요약 (잔액, 이번달 수입/지출) | BalanceCard, MonthlySummary, QuickActions |
 | Transactions (`/wallet/tx`) | 모든 트랜잭션 필터/검색 | TxFilterBar, TxTable |
-| Convert (`/wallet/convert`) | CCD→KRW 전환 | ConversionForm, RateInfo |
+| Convert (`/wallet/convert`) | CMD→KRW 전환 | ConversionForm, RateInfo |
 | QR Pay (`/wallet/qr`) | QR 생성 & 스캔 시뮬 | QRGenerator, QRScannerMock |
 | Allowances (`/wallet/allowance`) | 급여/수당 내역 | AllowanceList, IncomeDetailDialog |
 | Voucher (후급증) Center (`/wallet/voucher`) | 후급증 신청/발급/사용 | VoucherRequestForm, VoucherList, VoucherDetail |
@@ -476,10 +476,10 @@ export default function HomeClient() {
 ### 19.3 데이터 모델 (초안)
 ```ts
 // 통화 & 환율
-interface RateState { base: 'CCD'; krwPerCCD: number; lastUpdated: number }
+interface RateState { base: 'CMD'; krwPerCMD: number; lastUpdated: number }
 
 // 지갑 (단일 병사용, 다중 지갑 확장 용이)
-interface WalletSnapshot { id: string; ccd: number; krw: number; updatedAt: number }
+interface WalletSnapshot { id: string; cmd: number; krw: number; updatedAt: number }
 
 // 수입 타입 (급여/수당)
 type IncomeKind = 'salary' | 'leaveAllowance' | 'remoteDuty' | 'islandDuty' | 'bonus' | 'other'
@@ -488,10 +488,10 @@ type IncomeKind = 'salary' | 'leaveAllowance' | 'remoteDuty' | 'islandDuty' | 'b
 type ExpenseKind = 'px' | 'transfer' | 'qr' | 'conversion' | 'purchase' | 'other'
 
 interface BaseTxn { id: string; ts: number; note?: string }
-interface IncomeTxn extends BaseTxn { kind: 'income'; category: IncomeKind; amountCCD: number; amountKRW?: number }
-interface ExpenseTxn extends BaseTxn { kind: 'expense'; category: ExpenseKind; amountCCD: number; counterparty?: string }
-interface ConversionTxn extends BaseTxn { kind: 'conversion'; from: 'CCD'; to: 'KRW'; amountCCD: number; rate: number; feeCCD: number; receivedKRW: number }
-interface QRPayTxn extends BaseTxn { kind: 'qr'; direction: 'send' | 'receive'; amountCCD: number; merchantId?: string; peerWalletId?: string }
+interface IncomeTxn extends BaseTxn { kind: 'income'; category: IncomeKind; amountCMD: number; amountKRW?: number }
+interface ExpenseTxn extends BaseTxn { kind: 'expense'; category: ExpenseKind; amountCMD: number; counterparty?: string }
+interface ConversionTxn extends BaseTxn { kind: 'conversion'; from: 'CMD'; to: 'KRW'; amountCMD: number; rate: number; feeCMD: number; receivedKRW: number }
+interface QRPayTxn extends BaseTxn { kind: 'qr'; direction: 'send' | 'receive'; amountCMD: number; merchantId?: string; peerWalletId?: string }
 
 // 후급증 (Voucher)
 type VoucherTransport = 'bus' | 'air' | 'ship' | 'rail'
@@ -563,7 +563,7 @@ const allowedTransition: Record<VoucherStatus, VoucherStatus[]> = {
 - printed 이후 수정 차단.
 
 ### 19.6 UX 세부
-- Dashboard 상단: CCD / KRW 잔액 + 전환 버튼.
+- Dashboard 상단: CMD / KRW 잔액 + 전환 버튼.
 - 최근 5건 트랜잭션: 수입=녹색, 지출=빨강, 전환=보라, QR=노랑.
 - 필터: 날짜 범위, 타입(수입/지출/전환/QR), 카테고리, 금액 min/max.
 - 무한 스크롤 or 가상 리스트 (1000건 이상 시 렌더 최적화).
@@ -579,8 +579,8 @@ const allowedTransition: Record<VoucherStatus, VoucherStatus[]> = {
 
 ### 19.8 모킹 정책
 - 급여/수당 자동 발생: 달의 1일에 salary, 특정 규칙(remoteDuty: 주 1회 등) simulated trigger (앱 로드 시 날짜 비교 후 누락분 생성).
-- 환율: 기본 1 CCD = 1000 KRW (고정) 또는 settings store 조정.
-- 전환 수수료: 1% (최소 1 CCD) - `feeCCD = Math.max(amount * 0.01, 1)`.
+- 환율: 기본 1 CMD = 1000 KRW (고정) 또는 settings store 조정.
+- 전환 수수료: 1% (최소 1 CMD) - `feeCMD = Math.max(amount * 0.01, 1)`.
 
 ### 19.9 보안/무결성(로컬 기준)
 - 모든 mutation 함수에서 음수 잔액 방지.
@@ -589,7 +589,7 @@ const allowedTransition: Record<VoucherStatus, VoucherStatus[]> = {
 
 ### 19.10 최소 개발 단계 체크리스트
 - [ ] `state/rate.store.ts` 생성 (기본 환율)
-- [ ] `state/wallet.store.ts` 확장 (KRW + CCD 필드)
+- [ ] `state/wallet.store.ts` 확장 (KRW + CMD 필드)
 - [ ] `state/txn.store.ts` (필터 selector 포함)
 - [ ] `state/voucher.store.ts` (전이 로직 + 검증)
 - [ ] Dashboard UI (잔액/최근5건/QuickActions)
@@ -604,6 +604,71 @@ const allowedTransition: Record<VoucherStatus, VoucherStatus[]> = {
 - 스마트 제한: 1일 QR 결제 한도, 고액 전환 추가 인증.
 - 후급증 상태 자동 배치 스케줄러 (페이지 방문 없이 setInterval 기반 1회 실행).
 - 감사 로그 별도 store (mutation trace: who/action/prev/next snapshot hash).
+
+### 19.12 모바일 퍼스트(UI/UX) 구현 지침
+지갑/후급증/QR 결제 모듈은 "모바일 단말(휴대폰)" 사용을 기본 전제로 설계합니다.
+
+모바일 코어 원칙:
+1. One-Hand Reach: 주요 액션(전환, QR, 후급증 신청, 송금) 버튼은 화면 하단(Thumb zone)에 고정.
+2. Scroll Chunking: 긴 트랜잭션 리스트는 20~30개 단위 가상화(추후) 또는 무한 스크롤 + 상단 요약 고정(sticky summary).
+3. Latency Perception: 모든 mutating action(전환/QR 결제/후급증 상태 전이)에 150~300ms skeleton/optimistic 토스트.
+4. Distraction 최소화: 동일 화면 내 primary 버튼 1개, secondary 1~2개 권장.
+5. Accessible Tap Targets: 최소 44px 터치 영역, 아이콘 버튼은 `aria-label` 필수.
+
+레이아웃 패턴:
+- 글로벌 레이아웃: Mobile <640px 기준 `max-w-[420px] mx-auto` 컨테이너 (중앙 정렬) + `pb-20` (하단 바 높이 확보).
+- 하단 고정 네비(BottomBar): Home, Wallet, QR, Voucher, Settings (아이콘+라벨). 현재 경로 활성 색상.
+- Floating Action Button(FAB): 트랜잭션 목록 화면에 표시 (예: "전송/결제" 다중 액션 sheet 오픈).
+
+색상/타이포:
+- 잔액 주요 수치는 큰 사이즈(`text-2xl font-semibold`) 단색 대비 높음.
+- 수입/지출 컬러 토큰: `--income: 142 72% 29%`, `--expense: 0 72% 45%`, 전환=brand 변형.
+
+컴포넌트 밀도:
+- 카드 리스트 패딩: `px-4 py-3` (한 행 2~3 정보 요소) → 60~68px 높이 목표.
+- 긴 텍스트(노트)는 2줄 ellipsis 처리.
+
+네비게이션 흐름:
+1. Home → Quick Button (QR 결제 / 후급증 신청 / 전환 / 전체 내역)
+2. Wallet Dashboard → 최근 5건 → "전체 보기" 탭 (Transactions)
+3. Transactions → FAB(+) → Action Sheet (송금, 전환, QR 생성)
+4. Voucher Center → 신규 신청 버튼 상단 or FAB → 신청 Form → 완료 후 Detail로 이동.
+
+상태/피드백:
+- 전환 성공: 토스트(아이콘 + 수수료/수령액), 리스트 즉시 optimistic prepend.
+- 잔액 애니메이션: 변경 시 `animate-pulse` 400ms 또는 숫자 count-up (선택).
+- QR 스캔(모킹): 스캔 성공 시 bottom sheet 결과 + 즉시 트랜잭션 반영.
+
+오프라인/복구:
+- localStorage 초기화(브라우저 삭제) 감지 시 Onboarding 안내 ("새 지갑 초기화" 버튼).
+- Export/Import 버튼은 Settings 화면 하단 고정 영역.
+
+반응형 확장(태블릿/데스크탑):
+- ≥768px: 좌측 사이드 패널(요약 + 빠른 액션), 우측 상세/리스트 2컬럼 레이아웃.
+- 하단 네비는 ≥768px에서 사이드바 아이콘 스택으로 변환.
+
+퍼포먼스/최적화:
+- 트랜잭션 1000건 이상: 가상 스크롤 라이브러리 도입 고려 (추후 단계) → 현재는 날짜별 그룹 collapse.
+- QR 코드 생성 모듈은 dynamic import (desktop에서도 초기 번들 최소화).
+
+접근성(A11y):
+- 색상 대비 WCAG AA(4.5:1) 유지, income/expense 배경 칩은 outline + 아이콘 병행.
+- BottomBar: `nav role="navigation" aria-label="Primary"`.
+
+테스트 포인트(수동):
+- iPhone SE (375px), iPhone 14 Pro, Pixel 7 뷰포트에서 버튼 터치 범위.
+- 다크 모드에서 차트/색상 대비.
+- 긴 목적지/메모 필드 ellipsis 정상.
+
+구현 TODO (모바일 관점):
+- [ ] 글로벌 BottomBar 컴포넌트 (`app/_components/bottom-bar.tsx`)
+- [ ] Wallet Dashboard 모바일 카드 레이아웃
+- [ ] FAB + Action Sheet 패턴 (shadcn dialog/sheet 기반)
+- [ ] Responsive container 헬퍼 클래스 (`.app-shell`) 정의
+- [ ] 숫자 애니메이션 유틸 (requestAnimationFrame)
+- [ ] QR Scanner Mock (file input / textarea paste) 모바일 최적화
+
+요청 시 자세한 컴포넌트 스켈레톤을 추가하십시오.
 
 ---
 위 사양을 기반으로 구현을 진행하고, 필요 시 세부 스키마나 상태 전이 다이어그램을 추가하십시오.

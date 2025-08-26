@@ -11,7 +11,6 @@ import { useWalletStore } from '@/state/wallet.store';
 const tabs = [
   { key: 'assets', label: '자산' },
   { key: 'convert', label: '환전' },
-  { key: 'qr', label: '결제' },
   { key: 'tx', label: '내역' }
 ];
 
@@ -42,7 +41,7 @@ function FinanceInner(){
     <div className="p-4 space-y-5">
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">금융</h1>
-        <p className="text-xs text-muted-foreground">자산 / 환전 / 결제 / 내역</p>
+  <p className="text-xs text-muted-foreground">자산 / 환전 / 내역</p>
       </header>
       <nav className="flex gap-2 text-xs" aria-label="Finance tabs">
         {tabs.map(t => {
@@ -60,7 +59,6 @@ function FinanceInner(){
       <section className="rounded-lg border bg-card">
         {tab==='assets' && <div className="animate-in fade-in"><AssetsTab /></div>}
         {tab==='convert' && <div className="animate-in fade-in"><ConvertPage /></div>}
-        {tab==='qr' && <div className="animate-in fade-in"><QRPage /></div>}
         {tab==='tx' && <div className="animate-in fade-in"><TransactionsPage /></div>}
       </section>
     </div>

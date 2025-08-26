@@ -4,7 +4,8 @@ import { usePathname } from 'next/navigation';
 
 const items = [
   { href: '/wallet', label: 'Home' },
-    { href: '/wallet/finance', label: '금융' },
+  { href: '/wallet/finance', label: '금융' },
+  { href: '/wallet/qr', label: '결제' },
   { href: '/wallet/cert', label: '증명서' },
   { href: '/wallet/leave', label: '휴가' }
 ];

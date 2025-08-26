@@ -71,7 +71,7 @@ export default function QRPage() {
 
   return (
   <div className="p-4 space-y-6">
-  <h1 className="text-xl font-semibold">QR 결제</h1>
+  <h1 className="text-xl font-semibold">결제</h1>
       <div className="grid grid-cols-2 text-sm rounded-md overflow-hidden border">
         <button className={tab==='send'? 'h-10 bg-primary text-primary-foreground' : 'h-10 bg-secondary'} onClick={()=>setTab('send')}>결제(송신)</button>
         <button className={tab==='receive'? 'h-10 bg-primary text-primary-foreground' : 'h-10 bg-secondary'} onClick={()=>setTab('receive')}>수신</button>

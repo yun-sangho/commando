@@ -14,7 +14,7 @@ export default function ConvertPage() {
   const krw = net * rate;
   return (
   <div className="p-4 space-y-6">
-  <h1 className="text-xl font-semibold">전환 (CMD → KRW)</h1>
+  <h1 className="text-xl font-semibold">환전 (CMD → KRW)</h1>
       <form onSubmit={e => { e.preventDefault(); if (parsed > 0) { convertToKRW(parsed); setAmount(''); } }} className="space-y-4">
         <div className="space-y-1">
           <label className="text-xs font-medium">금액 (CMD)</label>
@@ -24,7 +24,7 @@ export default function ConvertPage() {
           <p>보유: {wallet.cmd.toLocaleString()} CMD</p>
           <p>실수령 (KRW): {krw>0? krw.toLocaleString(undefined,{maximumFractionDigits:0}) : 0} ₩ (rate {rate})</p>
         </div>
-  <button disabled={!(parsed>0) || parsed> wallet.cmd} className="w-full h-12 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 text-sm font-medium">전환</button>
+  <button disabled={!(parsed>0) || parsed> wallet.cmd} className="w-full h-12 rounded-lg bg-primary text-primary-foreground disabled:opacity-40 text-sm font-medium">환전</button>
       </form>
     </div>
   );

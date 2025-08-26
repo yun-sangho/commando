@@ -70,7 +70,7 @@ export default function WalletDashboard() {
               <span className="truncate max-w-[55%]">
                 {tx.kind === 'income' && '입금'}
                 {tx.kind === 'expense' && '지출'}
-                {tx.kind === 'conversion' && '전환'}
+                {tx.kind === 'conversion' && '환전'}
                 {tx.kind === 'qr' && (tx.direction === 'send' ? 'QR 결제' : 'QR 수신')}
                 {tx.note && <span className="text-muted-foreground ml-1">· {tx.note}</span>}
               </span>

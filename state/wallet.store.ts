@@ -44,16 +44,17 @@ const seedIncomes: IncomeTxn[] = [
 // Sort descending by ts (newest first among seeds, still earlier than new user txns)
 seedIncomes.sort((a,b)=> b.ts - a.ts);
 const seedTotal = seedIncomes.reduce((sum, t) => sum + t.amountCMD, 0);
-const INITIAL_BALANCE = seedTotal; // start balance equals seeded incomes total
+const INITIAL_BALANCE = seedTotal; // start CMD balance equals seeded incomes total
+const INITIAL_KRW = 50000; // 초기 KRW 보유 (데모용)
 
 export const useWalletStore = create<WalletState>()(persist((set, get) => ({
-  wallet: { id: 'primary', cmd: INITIAL_BALANCE, krw: 0, updatedAt: now },
+  wallet: { id: 'primary', cmd: INITIAL_BALANCE, krw: INITIAL_KRW, updatedAt: now },
   txns: seedIncomes, // seeded demo data
   seeded: true,
   ensureInit: () => {
     const s = get();
     if (!s.wallet) {
-  set({ wallet: { id: 'primary', cmd: INITIAL_BALANCE, krw: 0, updatedAt: Date.now() }, txns: seedIncomes, seeded: true });
+  set({ wallet: { id: 'primary', cmd: INITIAL_BALANCE, krw: INITIAL_KRW, updatedAt: Date.now() }, txns: seedIncomes, seeded: true });
     }
   },
   addIncome: (category, amountCMD, note) => {

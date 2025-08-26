@@ -22,7 +22,7 @@ export default function TransactionsPage() {
         <option value="all">전체</option>
         <option value="income">입금</option>
         <option value="expense">지출</option>
-        <option value="conversion">전환</option>
+        <option value="conversion">환전</option>
         <option value="qr">QR</option>
       </select>
       <ul className="divide-y border rounded-md bg-card text-sm">

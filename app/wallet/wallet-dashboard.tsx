@@ -3,12 +3,14 @@ import { useWalletStore } from '@/state/wallet.store'
 import { useLeaveStore } from '@/state/voucher.store'
 import { useServiceStore } from '@/state/service.store'
 import { useMemo } from 'react'
+import { useInvestStore } from '@/state/invest.store'
 
 function format(num: number) { return new Intl.NumberFormat('ko-KR').format(Math.round(num)) }
 
 export default function WalletDashboard() {
   // Use separate selectors to keep snapshots stable and avoid recreating an object each render
   const wallet = useWalletStore(s => s.wallet)
+  const investedPrincipal = useInvestStore(s => s.holdings.reduce((sum,h)=> sum + h.principal, 0))
   const allTxns = useWalletStore(s => s.txns)
   const txns = allTxns.slice(0,5)
   const leaves = useLeaveStore(s => s.leaves)
@@ -27,7 +29,7 @@ export default function WalletDashboard() {
     const daysToDischarge = discharge ? Math.max(0, Math.ceil((discharge.getTime() - now.getTime())/msPerDay)) : null;
     const monthKey = now.toISOString().slice(0,7); // yyyy-mm
     const monthlyExpense = allTxns
-      .filter(t => (t.kind === 'expense' || (t.kind === 'qr' && t.direction === 'send')) && new Date(t.ts).toISOString().slice(0,7) === monthKey)
+      .filter(t => (t.kind === 'expense' || t.kind === 'conversion' || (t.kind === 'qr' && t.direction === 'send')) && new Date(t.ts).toISOString().slice(0,7) === monthKey)
       .reduce((sum, t:any) => sum + (t.amountCMD||0), 0);
     // Mock mess menu (rotate by weekday)
     const menus = ['닭갈비','비빔밥','돈까스','제육볶음','카레라이스','볶음밥','라면/주먹밥'];
@@ -37,12 +39,13 @@ export default function WalletDashboard() {
   return (
     <div className="p-4 space-y-6">
       <header className="space-y-2">
-        <h1 className="text-xl font-semibold">지갑</h1>
+        <h1 className="text-xl font-semibold">Home</h1>
       </header>
       <section className="grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-card p-4 shadow-sm border">
-          <p className="text-xs text-muted-foreground mb-1">CMD 잔액</p>
-          <p className="text-2xl font-bold tracking-tight">{format(wallet.cmd)}</p>
+          <p className="text-xs text-muted-foreground mb-1">CMD 총자산 (현금+투자)</p>
+          <p className="text-2xl font-bold tracking-tight">{format(wallet.cmd + investedPrincipal)}</p>
+          <p className="mt-2 text-[10px] text-muted-foreground">현금 {format(wallet.cmd)} · 투자 {format(investedPrincipal)}</p>
         </div>
         <div className="rounded-xl bg-card p-4 shadow-sm border">
           <p className="text-xs text-muted-foreground mb-1">KRW 잔액</p>

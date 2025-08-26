@@ -3,12 +3,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const items = [
-  { href: '/wallet', label: '지갑' },
-  { href: '/wallet/convert', label: '환전' },
-  { href: '/wallet/qr', label: '결제' },
-  { href: '/wallet/id', label: 'ID' },
-  { href: '/wallet/voucher', label: '휴가' },
-  { href: '/wallet/training', label: '교육' }
+  { href: '/wallet', label: 'Home' },
+    { href: '/wallet/finance', label: '금융' },
+  { href: '/wallet/cert', label: '증명서' },
+  { href: '/wallet/leave', label: '휴가' }
 ];
 
 export function BottomBar() {
